@@ -4,7 +4,7 @@
 -type parse_result(T) :: {ok, T, string()} | {error, string()}.
 -type parser(T) :: fun((string()) -> parse_result(T)).
 
--export([char/1, sequence/2, choice/2, parse/2]).
+-export([char/1, sequence/2, choice/2, parse/2, string/1, digit/0, map/2, many/1]).
 
 
 %% @doc Parse a specific character
@@ -15,16 +15,57 @@ char(Target) ->
     end.
 
 
+%% @doc Parse a specific string
+-spec string(string()) -> parser(string()).
+string([]) -> fun(Input) -> {ok, "", Input} end;
+string([H | T]) ->
+    map(sequence(char(H), string(T)), fun({C, S}) -> [C | S] end).
+
+
+%% @doc Parse a digit character
+-spec digit() -> parser(char()).
+digit() ->
+    fun([H | T]) when H >= $0, H =< $9 -> {ok, H, T};
+       (_) -> {error, "Expected digit"}
+    end.
+
+
+%% @doc Transform the result of a parser
+-spec map(parser(T), fun((T) -> U)) -> parser(U).
+map(P, F) ->
+    fun(Input) ->
+            maybe
+                {ok, Result, Rest} ?= P(Input),
+                {ok, F(Result), Rest}
+            else
+                {error, Reason} -> {error, Reason}
+            end
+    end.
+
+
+%% @doc Zero or more repetitions
+-spec many(parser(T)) -> parser([T]).
+many(P) ->
+    fun(Input) ->
+            case P(Input) of
+                {ok, R, Rest} ->
+                    {ok, Rs, FinalRest} = (many(P))(Rest),
+                    {ok, [R | Rs], FinalRest};
+                {error, _} ->
+                    {ok, [], Input}
+            end
+    end.
+
+
 %% @doc Combine two parsers to run in sequence
 -spec sequence(parser(T), parser(U)) -> parser({T, U}).
 sequence(P1, P2) ->
     fun(Input) ->
-            case P1(Input) of
-                {ok, R1, Rest1} ->
-                    case P2(Rest1) of
-                        {ok, R2, Rest2} -> {ok, {R1, R2}, Rest2};
-                        {error, Reason} -> {error, Reason}
-                    end;
+            maybe
+                {ok, R1, Rest1} ?= P1(Input),
+                {ok, R2, Rest2} ?= P2(Rest1),
+                {ok, {R1, R2}, Rest2}
+            else
                 {error, Reason} -> {error, Reason}
             end
     end.
@@ -78,6 +119,17 @@ choice_test() ->
     ?assertEqual({ok, $b, "c"}, P("bc")),
     %% Match neither
     ?assertEqual({error, "Unexpected character"}, P("cc")).
+
+
+digit_to_int_test() ->
+    %% Combine digit, many, and map to parse an integer
+    IntParser = map(many(digit()), fun(Ds) -> list_to_integer(Ds) end),
+    ?assertEqual({ok, 123, "abc"}, IntParser("123abc")).
+
+
+string_test() ->
+    P = string("hello"),
+    ?assertEqual({ok, "hello", " world"}, P("hello world")).
 
 
 -endif.
