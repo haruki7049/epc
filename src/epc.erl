@@ -132,4 +132,29 @@ string_test() ->
     ?assertEqual({ok, "hello", " world"}, P("hello world")).
 
 
+many_test() ->
+    Parser = many(char($a)),
+    %% Match multiple characters
+    ?assertEqual({ok, "aaa", "bbb"}, Parser("aaabbb")),
+    %% Match zero characters (should succeed with empty list)
+    ?assertEqual({ok, [], "bbb"}, Parser("bbb")),
+    %% Match empty input
+    ?assertEqual({ok, [], ""}, Parser("")).
+
+
+many_digit_test() ->
+    %% Match multiple digits and convert to integer
+    Parser = map(many(digit()), fun(Ds) -> list_to_integer(Ds) end),
+    ?assertEqual({ok, 123, "abc"}, Parser("123abc")),
+    %% If no digits, list_to_integer would fail, so many should be followed by validation or use many1
+    ?assertEqual({ok, [], "abc"}, (many(digit()))("abc")).
+
+
+combination_test() ->
+    %% Parse "a" then zero or more "b"s
+    Parser = sequence(char($a), many(char($b))),
+    ?assertEqual({ok, {$a, "bbb"}, "c"}, Parser("abbbc")),
+    ?assertEqual({ok, {$a, []}, "c"}, Parser("ac")).
+
+
 -endif.
