@@ -1,13 +1,10 @@
 # Nix
-/.direnv/
+.direnv/
 result*
 result-*
 
 # Erlang
-/.erlang.mk/
-/*.d
-/*.dump
-/ebin/
-/deps/
-hoblisp
-/*.plt
+*.d
+*.dump
+*.beam
+*.plt
