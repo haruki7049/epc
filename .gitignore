@@ -9,3 +9,4 @@ result-*
 *.beam
 *.plt
 /docs/
+/logs/
