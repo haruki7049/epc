@@ -6,8 +6,10 @@
 -export([all/0]).
 -export([parse_key_value_test/1, choice_and_many_test/1]).
 
+
 all() ->
     [parse_key_value_test, choice_and_many_test].
+
 
 %% Integration test: Parse "key:value" format
 parse_key_value_test(_Config) ->
@@ -26,6 +28,7 @@ parse_key_value_test(_Config) ->
     ExpectedError = {error, "Unexpected character"},
     ?assertEqual(ExpectedError, epc:parse(KeyValueParser, "name:1024")),
     ok.
+
 
 %% Integration test: Parse choice followed by many characters
 choice_and_many_test(_Config) ->
