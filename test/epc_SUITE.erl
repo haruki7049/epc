@@ -13,20 +13,22 @@ all() ->
 
 %% Integration test: Parse "key:value" format
 parse_key_value_test(_Config) ->
-    KeyParser = epc:string("id"),
+    %% string/1 now expects a binary
+    KeyParser = epc:string(~"id"),
     ColonParser = epc:char($:),
     ValueParser = epc:map(epc:many(epc:digit()), fun(Ds) -> list_to_integer(Ds) end),
 
     %% Combine sequence: "id", ":", and digits
     KeyValueParser = epc:sequence(KeyParser, epc:sequence(ColonParser, ValueParser)),
 
-    %% Assert success case
-    ExpectedSuccess = {ok, {"id", {$:, 1024}}, ""},
-    ?assertEqual(ExpectedSuccess, epc:parse(KeyValueParser, "id:1024")),
+    %% Assert success case (input and remaining string must be binary)
+    ExpectedSuccess = {ok, {~"id", {$:, 1024}}, ~""},
+    ?assertEqual(ExpectedSuccess, epc:parse(KeyValueParser, ~"id:1024")),
 
     %% Assert failure case (invalid key)
-    ExpectedError = {error, "Unexpected character"},
-    ?assertEqual(ExpectedError, epc:parse(KeyValueParser, "name:1024")),
+    %% Note: Error message remains a string list in epc:string/1
+    ExpectedError = {error, "Expected string"},
+    ?assertEqual(ExpectedError, epc:parse(KeyValueParser, ~"name:1024")),
     ok.
 
 
@@ -39,10 +41,11 @@ choice_and_many_test(_Config) ->
     Parser = epc:sequence(PrefixParser, SuffixParser),
 
     %% Assert choice A
-    ExpectedA = {ok, {$A, "xxx"}, "y"},
-    ?assertEqual(ExpectedA, epc:parse(Parser, "Axxxy")),
+    %% many() returns a list, so "xxx" is correct, but the rest is binary ~"y"
+    ExpectedA = {ok, {$A, "xxx"}, ~"y"},
+    ?assertEqual(ExpectedA, epc:parse(Parser, ~"Axxxy")),
 
     %% Assert choice B
-    ExpectedB = {ok, {$B, []}, "y"},
-    ?assertEqual(ExpectedB, epc:parse(Parser, "By")),
+    ExpectedB = {ok, {$B, []}, ~"y"},
+    ?assertEqual(ExpectedB, epc:parse(Parser, ~"By")),
     ok.

@@ -22,9 +22,10 @@ json_parser() ->
     Colon = epc:token(epc:char($:)),
 
     %% Simple value parsers
-    NullP = epc:map(epc:token(epc:string("null")), fun(_) -> null end),
-    TrueP = epc:map(epc:token(epc:string("true")), fun(_) -> true end),
-    FalseP = epc:map(epc:token(epc:string("false")), fun(_) -> false end),
+    %% string/1 now expects binary
+    NullP = epc:map(epc:token(epc:string(~"null")), fun(_) -> null end),
+    TrueP = epc:map(epc:token(epc:string(~"true")), fun(_) -> true end),
+    FalseP = epc:map(epc:token(epc:string(~"false")), fun(_) -> false end),
 
     %% Number parser (integers with optional minus)
     MinusP = epc:optional(epc:char($-)),
@@ -90,7 +91,8 @@ json_parser() ->
 parse_json_test(_Config) ->
     Parser = json_parser(),
 
-    JsonString = "
+    %% Make JsonString a binary
+    JsonString = ~"
     {
         \"id\": 101,
         \"name\": \"epc\",
@@ -111,5 +113,6 @@ parse_json_test(_Config) ->
                                  }
                 },
 
-    ?assertEqual({ok, Expected, ""}, epc:parse(Parser, JsonString)),
+    %% Empty remaining input must also be a binary
+    ?assertEqual({ok, Expected, ~""}, epc:parse(Parser, JsonString)),
     ok.
