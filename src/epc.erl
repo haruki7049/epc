@@ -1,8 +1,8 @@
 -module(epc).
 -include_lib("eunit/include/eunit.hrl").
 
--type(parse_result(T) :: {ok, T, string()} | {error, string()}).
--type(parser(T) :: fun((string()) -> parse_result(T))).
+-type parse_result(T) :: {ok, T, string()} | {error, string()}.
+-type parser(T) :: fun((string()) -> parse_result(T)).
 
 -export([char/1, sequence/2, choice/2, parse/2, string/1, digit/0, map/2, many/1]).
 
