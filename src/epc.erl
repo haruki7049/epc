@@ -4,7 +4,7 @@
 -type parse_result(T) :: {ok, T, string()} | {error, string()}.
 -type parser(T) :: fun((string()) -> parse_result(T)).
 
--export([char/1, sequence/2, choice/2, parse/2, string/1, digit/0, map/2, many/1, lazy/1, sep_by/2]).
+-export([char/1, sequence/2, choice/2, parse/2, string/1, digit/0, map/2, many/1, many1/1, lazy/1, sep_by/2, satisfy/1, optional/1, none_of/1, spaces/0, token/1]).
 
 
 -doc "Parse a specific character.".
@@ -107,6 +107,59 @@ sep_by(P, Sep) ->
       fun(Input) -> {ok, [], Input} end).
 
 
+-doc "Parse a character that satisfies a predicate.".
+-spec satisfy(fun((char()) -> boolean())) -> parser(char()).
+satisfy(Pred) ->
+    fun([H | T]) ->
+            case Pred(H) of
+                true -> {ok, H, T};
+                false -> {error, "Predicate failed"}
+            end;
+       ([]) -> {error, "Unexpected end of input"}
+    end.
+
+
+-doc "Parse one or more occurrences of P.".
+-spec many1(parser(T)) -> parser([T]).
+many1(P) ->
+    map(
+        sequence(P, many(P)),
+        fun({First, Rest}) -> [First | Rest] end
+    ).
+
+
+-doc "Try to parse P. If it fails, return undefined without consuming input.".
+-spec optional(parser(T)) -> parser(T | undefined).
+optional(P) ->
+    choice(
+        P,
+        fun(Input) -> {ok, undefined, Input} end
+    ).
+
+
+-doc "Parse any character not in the given list.".
+-spec none_of(string()) -> parser(char()).
+none_of(Chars) ->
+    satisfy(fun(C) -> not lists:member(C, Chars) end).
+
+
+-doc "Parse zero or more whitespace characters.".
+-spec spaces() -> parser(string()).
+spaces() ->
+    many(satisfy(fun(C) ->
+        C =:= $\s orelse C =:= $\t orelse C =:= $\n orelse C =:= $\r
+    end)).
+
+
+-doc "Parse P, ignoring trailing spaces.".
+-spec token(parser(T)) -> parser(T).
+token(P) ->
+    map(
+        sequence(P, spaces()),
+        fun({Result, _}) -> Result end
+    ).
+
+
 -doc "Helper to run a parser.".
 -spec parse(parser(T), string()) -> parse_result(T).
 parse(Parser, Input) ->
@@ -202,3 +255,37 @@ sep_by_test() ->
     ?assertEqual({ok, [$1], ""}, epc:parse(P, "1")),
     %% Match none
     ?assertEqual({ok, [], "abc"}, epc:parse(P, "abc")).
+
+
+satisfy_and_string_test() ->
+    %% Parse a simple string like "hello" (ignoring escapes for simplicity)
+    StringChar = none_of("\""),
+    JsonStringParser = map(
+        sequence(char($"), sequence(many(StringChar), char($"))),
+        fun({_, {Str, _}}) -> Str end
+    ),
+    ?assertEqual({ok, "hello", ""}, epc:parse(JsonStringParser, "\"hello\"")),
+    ?assertEqual({ok, "world", " followed"}, epc:parse(JsonStringParser, "\"world\" followed")).
+
+
+spaces_test() ->
+    %% Parse a token ignoring trailing spaces
+    TokenP = token(string("true")),
+    ?assertEqual({ok, "true", "false"}, epc:parse(TokenP, "true  \n \t false")).
+
+
+optional_test() ->
+    %% Parse an optional minus sign followed by digits
+    MinusP = optional(char($-)),
+    NumP = map(
+        sequence(MinusP, many1(digit())),
+        fun({Minus, Ds}) ->
+            Int = list_to_integer(Ds),
+            case Minus of
+                undefined -> Int;
+                $- -> -Int
+            end
+        end
+    ),
+    ?assertEqual({ok, 123, ""}, epc:parse(NumP, "123")),
+    ?assertEqual({ok, -45, ""}, epc:parse(NumP, "-45")).
