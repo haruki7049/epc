@@ -54,9 +54,13 @@
               runHook postBuild
             '';
 
+            preCheck = ''
+              export HOME=$(mktemp -d)
+            '';
+
             checkPhase = ''
               runHook preCheck
-              make eunit
+              make test
               make dialyzer
               runHook postCheck
             '';
