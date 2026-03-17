@@ -36,7 +36,7 @@ eunit: build
 # common_test
 common_test: build
 	mkdir -p logs
-	ct_run -pa ebin -dir test -logdir logs
+	ct_run -pa ebin -dir test -logdir logs -no_auto_compile
 
 # edoc
 edoc: build
