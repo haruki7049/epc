@@ -1,4 +1,5 @@
 -module(epc).
+-include_lib("eunit/include/eunit.hrl").
 
 %% Types definition
 -type parse_result(T) :: {ok, T, string()} | {error, string()}.
