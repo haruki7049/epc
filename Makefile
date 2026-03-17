@@ -38,6 +38,10 @@ common_test: build
 	mkdir -p logs
 	ct_run -pa ebin -dir test -logdir logs -no_auto_compile
 
+# Test all
+test: eunit common_test
+t: test
+
 # edoc
 edoc: build
 	erl -noshell -pa ebin -eval "edoc:application(epc, \"./src\", [{dir, "docs"}])" -s init stop
