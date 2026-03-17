@@ -21,7 +21,7 @@ fmt: format
 
 # Dialyzer
 PLT = .epc_dialyzer.plt
-APPS = erts kernel stdlib compiler crypto syntax_tools parsetools
+APPS = erts kernel stdlib compiler crypto syntax_tools parsetools eunit
 
 dialyzer: build $(PLT)
 	dialyzer --plt $(PLT) ./ebin --get_warnings

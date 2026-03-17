@@ -32,6 +32,43 @@
           config,
           ...
         }:
+        let
+          epc = pkgs.stdenv.mkDerivation {
+            name = "epc";
+            src = lib.cleanSource ./.;
+
+            setupHook = pkgs.writeText "setupHook.sh" ''
+              addToSearchPath ERL_LIBS "$1/lib/erlang/lib/"
+            '';
+
+            dontStrip = true;
+            doCheck = true;
+
+            buildInputs = [
+              pkgs.beam28Packages.erlang
+            ];
+
+            buildPhase = ''
+              runHook preBuild
+              make
+              runHook postBuild
+            '';
+
+            checkPhase = ''
+              runHook preCheck
+              make eunit
+              make dialyzer
+              runHook postCheck
+            '';
+
+            installPhase = ''
+              runHook preInstall
+              mkdir -p $out/lib/erlang/lib/ebin
+              cp -r ./ebin/* $out/lib/erlang/lib/ebin
+              runHook postInstall
+            '';
+          };
+        in
         {
           treefmt = {
             projectRootFile = ".git/config";
@@ -56,11 +93,24 @@
             programs.shfmt.enable = true;
           };
 
+          packages = {
+            inherit epc;
+            default = epc;
+          };
+
+          checks = {
+            inherit epc;
+          };
+
           devShells.default = pkgs.mkShell {
             nativeBuildInputs = [
               pkgs.beam28Packages.erlang # Erlang VM
               pkgs.nil # Nix LSP
               pkgs.erlang-language-platform # Erlang LSP
+            ];
+
+            buildInputs = [
+              pkgs.beam28Packages.hex
             ];
 
             inputsFrom = [ config.treefmt.build.devShell ];
