@@ -88,11 +88,6 @@ parse(Parser, Input) ->
     Parser(Input).
 
 
-%% Include EUnit header
--ifdef(TEST).
--include_lib("eunit/include/eunit.hrl").
-
-
 char_test() ->
     Parser = char($a),
     %% Success case
@@ -155,6 +150,3 @@ combination_test() ->
     Parser = sequence(char($a), many(char($b))),
     ?assertEqual({ok, {$a, "bbb"}, "c"}, Parser("abbbc")),
     ?assertEqual({ok, {$a, []}, "c"}, Parser("ac")).
-
-
--endif.
