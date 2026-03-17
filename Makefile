@@ -32,3 +32,7 @@ $(PLT):
 # eunit
 eunit: build
 	erl -noshell -pa ebin -eval "eunit:test(epc, [verbose])" -s init stop
+
+# edoc
+edoc: build
+	erl -noshell -pa ebin -eval "edoc:application(epc, \"./src\", [{dir, "docs"}])" -s init stop
