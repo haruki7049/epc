@@ -123,18 +123,16 @@ satisfy(Pred) ->
 -spec many1(parser(T)) -> parser([T]).
 many1(P) ->
     map(
-        sequence(P, many(P)),
-        fun({First, Rest}) -> [First | Rest] end
-    ).
+      sequence(P, many(P)),
+      fun({First, Rest}) -> [First | Rest] end).
 
 
 -doc "Try to parse P. If it fails, return undefined without consuming input.".
 -spec optional(parser(T)) -> parser(T | undefined).
 optional(P) ->
     choice(
-        P,
-        fun(Input) -> {ok, undefined, Input} end
-    ).
+      P,
+      fun(Input) -> {ok, undefined, Input} end).
 
 
 -doc "Parse any character not in the given list.".
@@ -147,17 +145,16 @@ none_of(Chars) ->
 -spec spaces() -> parser(string()).
 spaces() ->
     many(satisfy(fun(C) ->
-        C =:= $\s orelse C =:= $\t orelse C =:= $\n orelse C =:= $\r
-    end)).
+                         C =:= $\s orelse C =:= $\t orelse C =:= $\n orelse C =:= $\r
+                 end)).
 
 
 -doc "Parse P, ignoring trailing spaces.".
 -spec token(parser(T)) -> parser(T).
 token(P) ->
     map(
-        sequence(P, spaces()),
-        fun({Result, _}) -> Result end
-    ).
+      sequence(P, spaces()),
+      fun({Result, _}) -> Result end).
 
 
 -doc "Helper to run a parser.".
@@ -261,9 +258,8 @@ satisfy_and_string_test() ->
     %% Parse a simple string like "hello" (ignoring escapes for simplicity)
     StringChar = none_of("\""),
     JsonStringParser = map(
-        sequence(char($"), sequence(many(StringChar), char($"))),
-        fun({_, {Str, _}}) -> Str end
-    ),
+                         sequence(char($"), sequence(many(StringChar), char($"))),
+                         fun({_, {Str, _}}) -> Str end),
     ?assertEqual({ok, "hello", ""}, epc:parse(JsonStringParser, "\"hello\"")),
     ?assertEqual({ok, "world", " followed"}, epc:parse(JsonStringParser, "\"world\" followed")).
 
@@ -278,14 +274,13 @@ optional_test() ->
     %% Parse an optional minus sign followed by digits
     MinusP = optional(char($-)),
     NumP = map(
-        sequence(MinusP, many1(digit())),
-        fun({Minus, Ds}) ->
-            Int = list_to_integer(Ds),
-            case Minus of
-                undefined -> Int;
-                $- -> -Int
-            end
-        end
-    ),
+             sequence(MinusP, many1(digit())),
+             fun({Minus, Ds}) ->
+                     Int = list_to_integer(Ds),
+                     case Minus of
+                         undefined -> Int;
+                         $- -> -Int
+                     end
+             end),
     ?assertEqual({ok, 123, ""}, epc:parse(NumP, "123")),
     ?assertEqual({ok, -45, ""}, epc:parse(NumP, "-45")).
