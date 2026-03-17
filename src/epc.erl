@@ -1,14 +1,13 @@
 -module(epc).
 -include_lib("eunit/include/eunit.hrl").
 
-%% Types definition
--type parse_result(T) :: {ok, T, string()} | {error, string()}.
--type parser(T) :: fun((string()) -> parse_result(T)).
+-type(parse_result(T) :: {ok, T, string()} | {error, string()}).
+-type(parser(T) :: fun((string()) -> parse_result(T))).
 
 -export([char/1, sequence/2, choice/2, parse/2, string/1, digit/0, map/2, many/1]).
 
 
-%% @doc Parse a specific character
+-doc("Parse a specific character.").
 -spec char(char()) -> parser(char()).
 char(Target) ->
     fun([H | T]) when H =:= Target -> {ok, H, T};
@@ -16,14 +15,14 @@ char(Target) ->
     end.
 
 
-%% @doc Parse a specific string
+-doc("Parse a specific string.").
 -spec string(string()) -> parser(string()).
 string([]) -> fun(Input) -> {ok, "", Input} end;
 string([H | T]) ->
     map(sequence(char(H), string(T)), fun({C, S}) -> [C | S] end).
 
 
-%% @doc Parse a digit character
+-doc("Parse a digit character.").
 -spec digit() -> parser(char()).
 digit() ->
     fun([H | T]) when H >= $0, H =< $9 -> {ok, H, T};
@@ -31,7 +30,7 @@ digit() ->
     end.
 
 
-%% @doc Transform the result of a parser
+-doc("Transform the result of a parser.").
 -spec map(parser(T), fun((T) -> U)) -> parser(U).
 map(P, F) ->
     fun(Input) ->
@@ -44,7 +43,7 @@ map(P, F) ->
     end.
 
 
-%% @doc Zero or more repetitions
+-doc("Zero or more repetitions.").
 -spec many(parser(T)) -> parser([T]).
 many(P) ->
     fun(Input) ->
@@ -58,7 +57,7 @@ many(P) ->
     end.
 
 
-%% @doc Combine two parsers to run in sequence
+-doc("Combine two parsers to run in sequence.").
 -spec sequence(parser(T), parser(U)) -> parser({T, U}).
 sequence(P1, P2) ->
     fun(Input) ->
@@ -72,7 +71,7 @@ sequence(P1, P2) ->
     end.
 
 
-%% @doc Try the first parser, if it fails, try the second
+-doc("Try the first parser, if it fails, try the second.").
 -spec choice(parser(T), parser(T)) -> parser(T).
 choice(P1, P2) ->
     fun(Input) ->
@@ -83,7 +82,7 @@ choice(P1, P2) ->
     end.
 
 
-%% @doc Helper to run a parser
+-doc("Helper to run a parser.").
 -spec parse(parser(T), string()) -> parse_result(T).
 parse(Parser, Input) ->
     Parser(Input).
