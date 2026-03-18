@@ -33,44 +33,11 @@
           ...
         }:
         let
-          epc = pkgs.stdenv.mkDerivation {
+          epc = pkgs.beam28Packages.buildRebar3 {
             name = "epc";
+            version = "rolling";
             src = lib.cleanSource ./.;
-
-            setupHook = pkgs.writeText "setupHook.sh" ''
-              addToSearchPath ERL_LIBS "$1/lib/erlang/lib/"
-            '';
-
-            dontStrip = true;
-            doCheck = true;
-
-            buildInputs = [
-              pkgs.beam28Packages.erlang
-            ];
-
-            buildPhase = ''
-              runHook preBuild
-              make
-              runHook postBuild
-            '';
-
-            preCheck = ''
-              export HOME=$(mktemp -d)
-            '';
-
-            checkPhase = ''
-              runHook preCheck
-              make test
-              make dialyzer
-              runHook postCheck
-            '';
-
-            installPhase = ''
-              runHook preInstall
-              mkdir -p $out/lib/erlang/lib/ebin
-              cp -r ./ebin/* $out/lib/erlang/lib/ebin
-              runHook postInstall
-            '';
+            beamDeps = [ ];
           };
         in
         {
