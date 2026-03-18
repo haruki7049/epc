@@ -3,4 +3,5 @@
   {description, "Erlang Parser Combinator"},
   {modules, [epc]},
   {applications, [kernel, stdlib]},
-  {licenses, ["MIT"]}]}.
+  {licenses, ["MIT"]},
+  {links, [{"GitHub", "https://github.com/haruki7049/epc"}]}]}.
