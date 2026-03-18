@@ -109,12 +109,10 @@
           devShells.default = pkgs.mkShell {
             nativeBuildInputs = [
               pkgs.beam28Packages.erlang # Erlang VM
+              pkgs.beam28Packages.rebar3 # Rebar3 build tool
+
               pkgs.nil # Nix LSP
               pkgs.erlang-language-platform # Erlang LSP
-            ];
-
-            buildInputs = [
-              pkgs.beam28Packages.hex
             ];
 
             inputsFrom = [ config.treefmt.build.devShell ];

@@ -1,5 +1,6 @@
 {application, epc,
  [{vsn, "0.0.0"},
+  {description, "Erlang Parser Combinator"},
   {modules, [epc]},
   {applications, [kernel, stdlib]},
   {licenses, ["MIT"]}]}.
