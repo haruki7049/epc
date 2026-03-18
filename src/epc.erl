@@ -4,7 +4,7 @@
 -type parse_result(T) :: {ok, T, binary()} | {error, string()}.
 -type parser(T) :: fun((binary()) -> parse_result(T)).
 
--export([char/1, sequence/2, choice/2, parse/2, string/1, digit/0, map/2, many/1, many1/1, lazy/1, sep_by/2, satisfy/1, optional/1, none_of/1, spaces/0, token/1]).
+-export([char/1, sequence/2, choice/1, choice/2, parse/2, string/1, digit/0, map/2, many/1, many1/1, lazy/1, sep_by/2, satisfy/1, optional/1, none_of/1, spaces/0, token/1]).
 
 
 -doc "Parse a specific character.".
@@ -90,6 +90,24 @@ choice(P1, P2) ->
                 {ok, R, Rest} -> {ok, R, Rest};
                 {error, _} -> P2(Input)
             end
+    end.
+
+
+-doc "Try a list of parsers in order, returning the result of the first one that succeeds.".
+-spec choice([parser(T)]) -> parser(T).
+choice(Parsers) ->
+    fun(Input) ->
+            choice_loop(Parsers, Input)
+    end.
+
+
+%% Internal helper loop for choice/1
+choice_loop([], _) ->
+    {error, "No parsers succeeded in choice"};
+choice_loop([P | Rest], Input) ->
+    case P(Input) of
+        {ok, Result, RestInput} -> {ok, Result, RestInput};
+        {error, _} -> choice_loop(Rest, Input)
     end.
 
 

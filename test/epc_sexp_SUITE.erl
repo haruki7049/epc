@@ -52,18 +52,15 @@ sexp_parser() ->
                   %% Tag symbols to differentiate them from strings
                   fun(Chars) -> {symbol, list_to_binary(Chars)} end)),
 
-    %% Recursive S-expression parser using lazy
+    %% Recursive S-expression parser using lazy and choice/1
     SExpP = fun F() ->
-                    epc:choice(
-                      NumberP,
-                      epc:choice(
-                        StringP,
-                        epc:choice(
-                          SymbolP,
-                          %% List parser: ( expr1 expr2 ... )
-                          epc:map(
-                            epc:sequence(LParen, epc:sequence(epc:many(epc:lazy(F)), RParen)),
-                            fun({_, {Elements, _}}) -> Elements end))))
+                    epc:choice([NumberP,
+                                StringP,
+                                SymbolP,
+                                %% List parser: ( expr1 expr2 ... )
+                                epc:map(
+                                  epc:sequence(LParen, epc:sequence(epc:many(epc:lazy(F)), RParen)),
+                                  fun({_, {Elements, _}}) -> Elements end)])
             end,
 
     %% The main parser allows leading spaces before the S-expression

@@ -50,19 +50,13 @@ json_parser() ->
                   fun({_, {Str, _}}) -> list_to_binary(Str) end  %% Convert to binary for JSON strings
                   )),
 
-    %% Recursive value parser using lazy
+    %% Recursive value parser using lazy and choice/1
     ValueP = fun F() ->
-                     epc:choice(
-                       NullP,
-                       epc:choice(
-                         TrueP,
-                         epc:choice(
-                           FalseP,
-                           epc:choice(
-                             NumberP,
-                             epc:choice(
-                               StringP,
-                               epc:choice(
+                     epc:choice([NullP,
+                                 TrueP,
+                                 FalseP,
+                                 NumberP,
+                                 StringP,
                                  %% Array parser
                                  epc:map(
                                    epc:sequence(LBracket, epc:sequence(epc:sep_by(epc:lazy(F), Comma), RBracket)),
@@ -78,7 +72,7 @@ json_parser() ->
                                            fun({Key, {_, Val}}) -> {Key, Val} end),
                                          Comma),
                                        RBrace)),
-                                   fun({_, {Pairs, _}}) -> maps:from_list(Pairs) end)))))))
+                                   fun({_, {Pairs, _}}) -> maps:from_list(Pairs) end)])
              end,
 
     %% The main parser allows leading spaces before the JSON value
