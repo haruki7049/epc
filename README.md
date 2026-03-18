@@ -1,6 +1,6 @@
 # epc
 
-[![Hex.pm version](https://img.shields.io/hexpm/v/lfe.svg)](https://hex.pm/packages/epc)
+[![Hex.pm version](https://img.shields.io/hexpm/v/epc.svg)](https://hex.pm/packages/epc)
 
 Erlang Parser Combinator
 
