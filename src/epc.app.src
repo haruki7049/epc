@@ -1,5 +1,5 @@
 {application, epc,
- [{vsn, "0.1.1"},
+ [{vsn, "0.1.2"},
   {description, "Erlang Parser Combinator"},
   {modules, [epc]},
   {applications, [kernel, stdlib]},
