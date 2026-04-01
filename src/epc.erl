@@ -1,5 +1,4 @@
 -module(epc).
--include_lib("eunit/include/eunit.hrl").
 
 -type parse_result(T) :: {ok, T, binary()} | {error, string()}.
 -type parser(T) :: fun((binary()) -> parse_result(T)).
@@ -193,6 +192,11 @@ parse(Parser, Input) ->
     Parser(Input).
 
 
+%%  eunit testing functions
+-ifdef(TEST).
+-include_lib("eunit/include/eunit.hrl").
+
+
 char_test() ->
     Parser = char($a),
     %% Success case
@@ -316,3 +320,6 @@ optional_test() ->
              end),
     ?assertEqual({ok, 123, ~""}, epc:parse(NumP, ~"123")),
     ?assertEqual({ok, -45, ~""}, epc:parse(NumP, ~"-45")).
+
+
+-endif.
