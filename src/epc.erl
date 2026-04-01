@@ -157,7 +157,8 @@ many1(P) ->
 
 
 -doc "Try to parse P. If it fails, return undefined without consuming input.".
--spec optional(parser(T)) -> parser(T | undefined).
+-spec optional(T) -> T
+              when T :: parser(T).
 optional(P) ->
     choice(
       P,
