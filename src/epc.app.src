@@ -1,7 +1,7 @@
-{application,epc,
-             [{vsn,"0.1.1"},
-              {description,"Erlang Parser Combinator"},
-              {modules,[epc]},
-              {applications,[kernel,stdlib]},
-              {licenses,["MIT"]},
-              {links,[{"GitHub","https://github.com/haruki7049/epc"}]}]}.
+{application, epc,
+ [{vsn, "0.1.1"},
+  {description, "Erlang Parser Combinator"},
+  {modules, [epc]},
+  {applications, [kernel, stdlib]},
+  {licenses, ["MIT"]},
+  {links, [{"GitHub", "https://github.com/haruki7049/epc"}]}]}.
